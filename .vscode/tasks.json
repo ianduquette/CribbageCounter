@@ -37,6 +37,17 @@
                 "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile"
-        }
+        },
+        {
+            "label": "test",
+            "command": "dotnet",
+            "type": "shell",
+            "group": "test",
+            "args": [
+                "test",
+                "${workspaceFolder}/CribbageCounter.Tests/CribbageCounter.Tests.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        }        
     ]
 }
