@@ -1,0 +1,17 @@
+rem How I created the project
+rem Make a batch file of the following
+
+mkdir CribbageCounter
+cd CribbageCounter
+dotnet new sln
+mkdir CribbageCounter
+cd CribbageCounter
+dotnet new classlib -f netcoreapp2.2
+cd ..
+mkdir CribbageCounter.Tests
+cd CribbageCounter.Tests
+dotnet new nunit -f netcoreapp2.2 
+dotnet add reference ..\CribbageCounter\CribbageCounter.csproj
+cd ..
+dotnet sln add .\CribbageCounter\CribbageCounter.csproj
+dotnet sln add .\CribbageCounter.Tests\CribbageCounter.Tests.csproj

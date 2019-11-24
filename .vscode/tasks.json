@@ -39,7 +39,7 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "test",
+            "label": "Tests CribbageCounter",
             "command": "dotnet",
             "type": "shell",
             "group": "test",

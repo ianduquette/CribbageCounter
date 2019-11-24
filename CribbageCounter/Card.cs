@@ -1,14 +1,15 @@
-﻿namespace CribbageCounter {
-    public class Card {
+﻿using System;
 
+namespace CribbageCounter {
+    public class Card {
         private const string Ace = "A";
         private const string King = "K";
         private const string Queen = "Q";
         private const string Jack = "J";
 
-        public string Value { get; set; }
+        public string Value { get; private set; }
 
-        public char Suit { get; set; }
+        public Suit Suit { get; private set; }
 
         public int Rank {
             get {
@@ -21,44 +22,52 @@
             }
         }
 
-        public Card(string value, char suit) {
-            ValidateValue(value);
-            ValidateSuit(suit);
-            Value = value;            
-            Suit = suit;
+        public Card(string input) {
+            validateInput(input);
+
+            char suit = input[input.Length - 1];
+            string value = input.Substring(0, input.Length - 1);
+
+            validateSuit(suit);
+            Suit = (Suit)suit;
+
+            validateValue(value);
+            Value = value;
         }
 
         public override string ToString() {
-            return $"{Value}{Suit}";
+            return $"{Value}{((char)Suit)}";
         }
 
-        private void ValidateSuit(char suit) {
-            switch (suit) {
-                case 'S':
-                case 'H':
-                case 'C':
-                case 'D':
-                    return;
-                default:
-                    throw new InvalidSuitException($"Suit of '{suit}' is invalid.");
+        public override int GetHashCode() {
+            unchecked {
+                int hash = 17;
+                hash = hash * 23 + Value.GetHashCode();
+                hash = hash * 23 + Suit.GetHashCode();
+                return hash;
             }
         }
 
-         private void ValidateValue(string value) {             
-            switch (value) {
-                case "A":
-                case "J":
-                case "Q":
-                case "K":
-                    return;                
-                default:
-                    int cardValue;
-                    bool success = int.TryParse(value, out cardValue);
-                    if (success && cardValue >= 2 && cardValue <= 10) {
-                        return;
-                    }
-                    throw new InvalidValueException($"Value of '{value}' is invalid.");
+        public override bool Equals(object value) {
+            if (Object.ReferenceEquals(null, value)) {
+                return false;
             }
+
+            if (Object.ReferenceEquals(this, value)) {
+                return true;
+            }
+
+            if (value.GetType() != this.GetType()) {
+                return false;
+            }
+
+            return IsEqual((Card)value);
+        }
+
+        public bool IsEqual(Card card) {
+            return
+                card.Value.Equals(this.Value, StringComparison.OrdinalIgnoreCase)
+                && card.Suit == this.Suit;
         }
 
         private int getRank() {
@@ -86,6 +95,41 @@
                     return 10;
                 default:
                     return int.Parse(Value);
+            }
+        }
+
+        private void validateInput(string input) {
+            if (input.Length < 2 || input.Length > 3) {
+                throw new ArgumentException("Input must be in format of: 'AS', '10H', or '2C'");
+            }
+        }
+
+        private void validateSuit(char suit) {
+            switch (suit) {
+                case 'S':
+                case 'H':
+                case 'C':
+                case 'D':
+                    return;
+                default:
+                    throw new InvalidSuitException($"Suit of '{suit}' is invalid.");
+            }
+        }
+
+        private void validateValue(string value) {
+            switch (value) {
+                case "A":
+                case "J":
+                case "Q":
+                case "K":
+                    return;
+                default:
+                    int cardValue;
+                    bool success = int.TryParse(value, out cardValue);
+                    if (success && cardValue >= 2 && cardValue <= 10) {
+                        return;
+                    }
+                    throw new InvalidValueException($"Value of '{value}' is invalid.");
             }
         }
 
