@@ -7,15 +7,16 @@ namespace CribbageCounter {
         private const string Queen = "Q";
         private const string Jack = "J";
 
-        public string Value { get; private set; }
+        public string Value { get; }
 
-        public Suit Suit { get; private set; }
+        public Suit Suit { get; }
 
         public int Rank {
             get {
                 return getRank();
             }
         }
+
         public int Points {
             get {
                 return getPoints();

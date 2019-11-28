@@ -4,7 +4,7 @@ using System.Linq;
 namespace CribbageCounter {
     public class Score {
 
-        public List<ScoreDetail> Details { get; private set; }
+        public List<ScoreDetail> Details { get; }
 
         public int Points {
             get {
@@ -33,11 +33,17 @@ namespace CribbageCounter {
             }
         }
 
-        public void AddFourOfAKind(Card[] cards) {
+        public List<ScoreDetail> Runs {
+            get {
+                return Details.Where(d => d.ScoreDetailType == ScoreDetailType.Run).ToList();
+            }
+        }
+
+        public void AddFourOfAKind(IEnumerable<Card> cards) {
             Details.Add(ScoreDetail.FourOfAKind(cards));
         }
 
-        public void AddThreeOfAKind(Card[] cards) {
+        public void AddThreeOfAKind(IEnumerable<Card> cards) {
             //If not already in a four of a kind
             if (FourOfAKind != null && FourOfAKind.Cards.Intersect(cards).Any()) {
                 return;
@@ -46,7 +52,7 @@ namespace CribbageCounter {
             Details.Add(ScoreDetail.ThreeOfAKind(cards));
         }
 
-        public void AddPair(Card[] cards) {
+        public void AddPair(IEnumerable<Card> cards) {
             //If not already in a four of a kind
             if (FourOfAKind != null && FourOfAKind.Cards.Intersect(cards).Any()) {
                 return;
@@ -57,6 +63,21 @@ namespace CribbageCounter {
             }
 
             Details.Add(ScoreDetail.Pair(cards));
+        }
+
+        public void AddRun(IEnumerable<Card> cards) {
+            bool allCardsInAnotherRun = false;
+            //If not already in another run
+            Runs.ForEach(r => {
+                if (cards.All(c => r.Cards.Contains(c))) {
+                    allCardsInAnotherRun = true;
+                    return;
+                }
+            });
+
+            if (!allCardsInAnotherRun) {
+                Details.Add(ScoreDetail.Run(cards));
+            }
         }
 
     }

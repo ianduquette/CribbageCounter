@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace CribbageCounter {
     public class Hand {
-        public Card[] Cards { get; private set; }
+        public Card[] Cards { get; }
         private Card[][] _setsOfFour;
         private Card[][] _setsOfThree;
         private Card[][] _setsOfTwo;
@@ -20,42 +20,54 @@ namespace CribbageCounter {
                 throw new ArgumentException("Duplicate card");
             }
 
-            InitializeSetsOfFour();
-            InitializeSetsOfThree();
-            InitializeSetsOfTwo();
+            initializeSetsOfFour();
+            initializeSetsOfThree();
+            initializeSetsOfTwo();
         }
 
         public Score CountScore() {
             var result = new Score();
-            CountFourOfAKind(result);
-            CountThreeOfAKind(result);
-            CountPairs(result);
+            countKinds(_setsOfFour, result, result.AddFourOfAKind);
+            countKinds(_setsOfThree, result, result.AddThreeOfAKind);
+            countKinds(_setsOfTwo, result, result.AddPair);
+            countRuns(result, new[] { Cards });
+            countRuns(result, _setsOfFour);
+            countRuns(result, _setsOfThree);
             return result;
         }
 
-        private void CountFourOfAKind(Score score) {
-            IterateAndScoreKind(_setsOfFour, score, score.AddFourOfAKind);
-        }
-
-        private void CountThreeOfAKind(Score score) {
-            IterateAndScoreKind(_setsOfThree, score, score.AddThreeOfAKind);
-        }
-
-        private void CountPairs(Score score) {
-            IterateAndScoreKind(_setsOfTwo, score, score.AddPair);
-        }
-
-        private static void IterateAndScoreKind(IEnumerable<IEnumerable<Card>> s, Score score, Action<Card[]> addToScore) {
+        private static void countKinds(IEnumerable<IEnumerable<Card>> s, Score score, Action<IEnumerable<Card>> addToScore) {
             s.ForEach(i => {
+                i = sortCards(i);
                 var f = i.First();
                 if (i.All(c => c.Value.Equals(f.Value, StringComparison.OrdinalIgnoreCase))) {
-                    addToScore(i.ToArray());
+                    addToScore(i);
                     return;
                 }
             });
         }
 
-        private void InitializeSetsOfFour() {
+        private void countRuns(Score score, IEnumerable<IEnumerable<Card>> setsOfCards) {
+            setsOfCards.ForEach(s => {
+                var currentSet = sortCards(s).ToList();
+                for (int i = 0; i < s.Count() - 1; i++) {
+                    if (currentSet[i].Rank + 1 != currentSet[i + 1].Rank) {
+                        return;
+                    }
+                }
+                score.AddRun(currentSet);
+            });
+        }
+
+        private static IEnumerable<Card> sortCards(IEnumerable<Card> cards) {
+            return cards.OrderBy(c => c.Rank).ThenBy(c =>
+                c.Suit == Suit.Spade ? 1 :
+                c.Suit == Suit.Heart ? 2 :
+                c.Suit == Suit.Club ? 3 :
+                4);
+        }
+
+        private void initializeSetsOfFour() {
             _setsOfFour = new Card[5][];
             _setsOfFour[0] = new Card[] { Cards[0], Cards[1], Cards[2], Cards[3] };
             _setsOfFour[1] = new Card[] { Cards[0], Cards[1], Cards[2], Cards[4] };
@@ -64,7 +76,7 @@ namespace CribbageCounter {
             _setsOfFour[4] = new Card[] { Cards[1], Cards[2], Cards[3], Cards[4] };
         }
 
-        private void InitializeSetsOfThree() {
+        private void initializeSetsOfThree() {
             _setsOfThree = new Card[10][];
             _setsOfThree[0] = new Card[] { Cards[0], Cards[1], Cards[2] };
             _setsOfThree[1] = new Card[] { Cards[0], Cards[1], Cards[3] };
@@ -78,7 +90,7 @@ namespace CribbageCounter {
             _setsOfThree[9] = new Card[] { Cards[2], Cards[3], Cards[4] };
         }
 
-        private void InitializeSetsOfTwo() {
+        private void initializeSetsOfTwo() {
             _setsOfTwo = new Card[10][];
             _setsOfTwo[0] = new Card[] { Cards[0], Cards[1] };
             _setsOfTwo[1] = new Card[] { Cards[0], Cards[2] };

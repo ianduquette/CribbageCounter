@@ -1,32 +1,37 @@
+using System.Collections.Generic;
+using System.Linq;
+
 namespace CribbageCounter {
     public class ScoreDetail {
-        public ScoreDetailType ScoreDetailType { get; private set; }
+        public ScoreDetailType ScoreDetailType { get; }
 
-        public int Points { get; private set; }
+        public int Points { get; }
 
-        public string Description { get; private set; }
+        public string Description { get; }
 
-        public Card[] Cards {
-            get; private set;
-        }
+        public IList<Card> Cards { get; }
 
-        private ScoreDetail(ScoreDetailType scoreDetailType, int points, string description, Card[] cards) {
+        private ScoreDetail(ScoreDetailType scoreDetailType, int points, string description, IEnumerable<Card> cards) {
             ScoreDetailType = scoreDetailType;
             Points = points;
             Description = description;
-            Cards = cards;
+            Cards = cards.ToList();
         }
 
-        public static ScoreDetail FourOfAKind(Card[] cards) {
+        public static ScoreDetail FourOfAKind(IEnumerable<Card> cards) {
             return new ScoreDetail(ScoreDetailType.FourOfAKind, 12, "Four of a Kind", cards);
         }
 
-        public static ScoreDetail ThreeOfAKind(Card[] cards) {
+        public static ScoreDetail ThreeOfAKind(IEnumerable<Card> cards) {
             return new ScoreDetail(ScoreDetailType.ThreeOfAKind, 6, "Three of a Kind", cards);
         }
 
-        public static ScoreDetail Pair(Card[] cards) {
+        public static ScoreDetail Pair(IEnumerable<Card> cards) {
             return new ScoreDetail(ScoreDetailType.Pair, 2, "Pair", cards);
+        }
+
+        public static ScoreDetail Run(IEnumerable<Card> cards) {
+            return new ScoreDetail(ScoreDetailType.Run, cards.Count(), "Run", cards);
         }
 
     }
