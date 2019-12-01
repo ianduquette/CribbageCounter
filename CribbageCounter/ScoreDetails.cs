@@ -34,5 +34,9 @@ namespace CribbageCounter {
             return new ScoreDetail(ScoreDetailType.Run, cards.Count(), "Run", cards);
         }
 
+        public static ScoreDetail Flush(IEnumerable<Card> cards) {
+            return new ScoreDetail(ScoreDetailType.Flush, cards.Count(), "Flush", cards);
+        }
+
     }
 }

@@ -27,36 +27,43 @@ namespace CribbageCounter {
 
         public Score CountScore() {
             var result = new Score();
-            countKinds(_setsOfFour, result, result.AddFourOfAKind);
-            countKinds(_setsOfThree, result, result.AddThreeOfAKind);
-            countKinds(_setsOfTwo, result, result.AddPair);
-            countRuns(result, new[] { Cards });
-            countRuns(result, _setsOfFour);
-            countRuns(result, _setsOfThree);
+            scoreSets(_setsOfFour, allValuesEqual, result.AddFourOfAKind, result);
+            scoreSets(_setsOfThree, allValuesEqual, result.AddThreeOfAKind, result);
+            scoreSets(_setsOfTwo, allValuesEqual, result.AddPair, result);
+            scoreSets(new[] { Cards }, allValuesIncrementByOne, result.AddRun, result);
+            scoreSets(_setsOfFour, allValuesIncrementByOne, result.AddRun, result);
+            scoreSets(_setsOfThree, allValuesIncrementByOne, result.AddRun, result);
+            scoreSets(new[] { Cards }, allSuitsEqual, result.AddFlush, result);
+            scoreSets(_setsOfFour, allSuitsEqual, result.AddFlush, result);
             return result;
         }
 
-        private static void countKinds(IEnumerable<IEnumerable<Card>> s, Score score, Action<IEnumerable<Card>> addToScore) {
-            s.ForEach(i => {
-                i = sortCards(i);
-                var f = i.First();
-                if (i.All(c => c.Value.Equals(f.Value, StringComparison.OrdinalIgnoreCase))) {
-                    addToScore(i);
-                    return;
+        private static void scoreSets(IEnumerable<IEnumerable<Card>> setsOfCards, Predicate<IEnumerable<Card>> condition, Action<IEnumerable<Card>> addToScore, Score score) {
+            setsOfCards.ForEach(s => {
+                if (condition(s)) {
+                    addToScore(sortCards(s));
                 }
             });
         }
 
-        private void countRuns(Score score, IEnumerable<IEnumerable<Card>> setsOfCards) {
-            setsOfCards.ForEach(s => {
-                var currentSet = sortCards(s).ToList();
-                for (int i = 0; i < s.Count() - 1; i++) {
-                    if (currentSet[i].Rank + 1 != currentSet[i + 1].Rank) {
-                        return;
-                    }
+        private static bool allValuesEqual(IEnumerable<Card> cards) {
+            var f = cards.First();
+            return cards.All(c => c.Value.Equals(f.Value, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static bool allValuesIncrementByOne(IEnumerable<Card> cards) {
+            var listOfCards = sortCards(cards).ToList();
+            for (int i = 0; i < listOfCards.Count() - 1; i++) {
+                if (listOfCards[i].Rank + 1 != listOfCards[i + 1].Rank) {
+                    return false;
                 }
-                score.AddRun(currentSet);
-            });
+            }
+            return true;
+        }
+
+        private static bool allSuitsEqual(IEnumerable<Card> cards) {
+            var f = cards.First();
+            return cards.All(c => c.Suit == f.Suit);
         }
 
         private static IEnumerable<Card> sortCards(IEnumerable<Card> cards) {

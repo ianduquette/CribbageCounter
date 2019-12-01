@@ -39,6 +39,12 @@ namespace CribbageCounter {
             }
         }
 
+        public ScoreDetail Flush {
+            get {
+                return Details.SingleOrDefault(d => d.ScoreDetailType == ScoreDetailType.Flush);
+            }
+        }
+
         public void AddFourOfAKind(IEnumerable<Card> cards) {
             Details.Add(ScoreDetail.FourOfAKind(cards));
         }
@@ -78,6 +84,15 @@ namespace CribbageCounter {
             if (!allCardsInAnotherRun) {
                 Details.Add(ScoreDetail.Run(cards));
             }
+        }
+
+        public void AddFlush(IEnumerable<Card> cards) {
+            //If not already in another flush
+            if (Flush != null && Flush.Cards.Intersect(cards).Any()) {
+                return;
+            }
+
+            Details.Add(ScoreDetail.Flush(cards));
         }
 
     }

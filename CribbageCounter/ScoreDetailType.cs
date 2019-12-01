@@ -3,6 +3,7 @@ namespace CribbageCounter {
         FourOfAKind,
         ThreeOfAKind,
         Pair,
-        Run
+        Run,
+        Flush
     }
 }

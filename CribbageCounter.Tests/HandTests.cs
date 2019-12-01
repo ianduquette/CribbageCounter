@@ -68,25 +68,6 @@ namespace CribbageCounter.Tests {
             assertScoreDetailOrdered(scoreDetail, expectedPoints, expectedDescription, expectedCardsInHand);
         }
 
-        [Test]
-        public void CountScore_RunOfThreeAndPair() {
-            //Arrange
-            var expectedPair = new List<Card> { new Card("7S"), new Card("7C") };
-            var expectedThreeOfAKind = new List<Card> { new Card("QH"), new Card("QC"), new Card("QD") };
-
-            var hand = Hand.Create("7C", "QD", "QC", "7S", "QH");
-
-            //Act
-            var score = hand.CountScore();
-
-            //Assert
-            Assert.AreEqual(8, score.Points);
-            Assert.AreEqual(1, score.Pairs.Count);
-
-            assertScoreDetailOrdered(score.Pairs[0], 2, "Pair", expectedPair);
-            assertScoreDetailOrdered(score.ThreeOfAKind, 6, "Three of a Kind", expectedThreeOfAKind);
-        }
-
         [TestCase("QH", "KC", "9H", "JD", "10S", new[] { "9H", "10S", "JD", "QH", "KC" }, Description = "Run of five.  No fifteens.")]
         [TestCase("5C", "4H", "3D", "AS", "2S", new[] { "AS", "2S", "3D", "4H", "5C" }, Description = "Run of five.  One fifteen.")]
         public void CountScore_RunOfFive(string c1, string c2, string c3, string c4, string c5, string[] cardsInScore) {
@@ -120,6 +101,22 @@ namespace CribbageCounter.Tests {
             assertScoreDetailOrdered(scoreDetail, 4, "Run", expectedCardsInHand);
         }
 
+        [TestCase("2S", "9C", "AC", "10C", "8S", new[] { "8S", "9C", "10C" }, Description = "Run of Three.  No fifteens.")]
+        [TestCase("AH", "2H", "JC", "3H", "KS", new[] { "AH", "2H", "3H" }, Description = "Run of Three.  Two fifteens.")]
+        public void CountScore_RunOfThree(string c1, string c2, string c3, string c4, string c5, string[] cardsInScore) {
+            //Arrange
+            var hand = Hand.Create(c1, c2, c3, c4, c5);
+
+            //Act
+            var score = hand.CountScore();
+
+            //Assert
+            Assert.AreEqual(3, score.Points);
+            var scoreDetail = score.Runs.FirstOrDefault();
+            var expectedCardsInHand = cardsInScore.Select(c => new Card(c)).ToList();
+            assertScoreDetailOrdered(scoreDetail, 3, "Run", expectedCardsInHand);
+        }
+
         [Test]
         public void CountScore_TwoRunsOfFour() {
             //Arrange
@@ -142,22 +139,6 @@ namespace CribbageCounter.Tests {
             assertScoreDetailOrdered(score.Runs[1], 4, "Run", expectedSecondRun);
         }
 
-        [TestCase("2S", "9C", "AC", "10C", "8S", new[] { "8S", "9C", "10C" }, Description = "Run of Three.  No fifteens.")]
-        [TestCase("AH", "2H", "JC", "3H", "KS", new[] { "AH", "2H", "3H" }, Description = "Run of Three.  Two fifteens.")]
-        public void CountScore_RunOfThree(string c1, string c2, string c3, string c4, string c5, string[] cardsInScore) {
-            //Arrange
-            var hand = Hand.Create(c1, c2, c3, c4, c5);
-
-            //Act
-            var score = hand.CountScore();
-
-            //Assert
-            Assert.AreEqual(3, score.Points);
-            var scoreDetail = score.Runs.FirstOrDefault();
-            var expectedCardsInHand = cardsInScore.Select(c => new Card(c)).ToList();
-            assertScoreDetailOrdered(scoreDetail, 3, "Run", expectedCardsInHand);
-        }
-
         [Test]
         public void CountScore_TwoRunsOfThree() {
             //Arrange
@@ -178,6 +159,59 @@ namespace CribbageCounter.Tests {
             assertScoreDetailOrdered(score.Pairs[0], 2, "Pair", expectedPair);
             assertScoreDetailOrdered(score.Runs[0], 3, "Run", expectedFirstRun);
             assertScoreDetailOrdered(score.Runs[1], 3, "Run", expectedSecondRun);
+        }
+
+        [Test]
+        public void CountScore_RunOfThreeAndPair() {
+            //Arrange
+            var expectedPair = new List<Card> { new Card("7S"), new Card("7C") };
+            var expectedThreeOfAKind = new List<Card> { new Card("QH"), new Card("QC"), new Card("QD") };
+
+            var hand = Hand.Create("7C", "QD", "QC", "7S", "QH");
+
+            //Act
+            var score = hand.CountScore();
+
+            //Assert
+            Assert.AreEqual(8, score.Points);
+            Assert.AreEqual(1, score.Pairs.Count);
+
+            assertScoreDetailOrdered(score.Pairs[0], 2, "Pair", expectedPair);
+            assertScoreDetailOrdered(score.ThreeOfAKind, 6, "Three of a Kind", expectedThreeOfAKind);
+        }
+
+        [TestCase("KC", "QC", "AC", "10C", "7C", new[] { "AC", "7C", "10C", "QC", "KC" }, Description = "Flush of five.  No fifteens. No Runs")]
+        [TestCase("2D", "JD", "10S", "4D", "8D", new[] { "2D", "4D", "8D", "JD" }, Description = "Flush of four.  No fifteens. No Runs")]
+        public void CountScore_Flush(string c1, string c2, string c3, string c4, string c5, string[] cardsInScore) {
+            //Arrange
+            var hand = Hand.Create(c1, c2, c3, c4, c5);
+
+            //Act
+            var score = hand.CountScore();
+
+            //Assert
+            Assert.AreEqual(cardsInScore.Count(), score.Points);
+            var scoreDetail = score.Flush;
+            var expectedCardsInHand = cardsInScore.Select(c => new Card(c)).ToList();
+            assertScoreDetailOrdered(scoreDetail, cardsInScore.Count(), "Flush", expectedCardsInHand);
+        }
+
+        [Test]
+        public void CountScore_FlushOfFourAndRunOfFive() {
+            //Arrange
+            var expectedFlush = new List<Card> { new Card("8H"), new Card("9H"), new Card("10H"), new Card("JH") };
+            var expectedRun = new List<Card> { new Card("8H"), new Card("9H"), new Card("10H"), new Card("JH"), new Card("QD") };
+
+            var hand = Hand.Create("JH", "8H", "10H", "9H", "QD");
+
+            //Act
+            var score = hand.CountScore();
+
+            //Assert
+            Assert.AreEqual(9, score.Points);
+
+            assertScoreDetailOrdered(score.Runs.SingleOrDefault(), 5, "Run", expectedRun);
+            assertScoreDetailOrdered(score.Flush, 4, "Flush", expectedFlush);
         }
 
         private static void assertScoreDetailOrdered(ScoreDetail actualScoreDetail, int expectedPoints, string expectedDescription, IList<Card> expectedInScore) {
