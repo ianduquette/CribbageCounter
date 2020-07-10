@@ -8,20 +8,9 @@ namespace CribbageCounter {
         private const string Jack = "J";
 
         public string Value { get; }
-
         public Suit Suit { get; }
-
-        public int Rank {
-            get {
-                return getRank();
-            }
-        }
-
-        public int Points {
-            get {
-                return getPoints();
-            }
-        }
+        public int Rank => getRank();
+        public int Points => getPoints();
 
         public Card(string input) {
             validateInput(input);
@@ -36,9 +25,7 @@ namespace CribbageCounter {
             Value = value;
         }
 
-        public override string ToString() {
-            return $"{Value}{((char)Suit)}";
-        }
+        public override string ToString() => $"{Value}{((char)Suit)}";
 
         public override int GetHashCode() {
             unchecked {

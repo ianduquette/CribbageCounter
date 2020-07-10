@@ -5,6 +5,7 @@ using System.Linq;
 namespace CribbageCounter {
     public class Hand {
         public Card[] Cards { get; }
+        private Card[][] _allFive => new[] { Cards };
         private Card[][] _setsOfFour;
         private Card[][] _setsOfThree;
         private Card[][] _setsOfTwo;
@@ -27,14 +28,30 @@ namespace CribbageCounter {
 
         public Score CountScore() {
             var result = new Score();
+            //Four of a kind
             scoreSets(_setsOfFour, allValuesEqual, result.AddFourOfAKind, result);
+            //Three of a kinds
             scoreSets(_setsOfThree, allValuesEqual, result.AddThreeOfAKind, result);
+            //Pairs
             scoreSets(_setsOfTwo, allValuesEqual, result.AddPair, result);
-            scoreSets(new[] { Cards }, allValuesIncrementByOne, result.AddRun, result);
+            //Run of five cards
+            scoreSets(_allFive, allValuesIncrementByOne, result.AddRun, result);
+            //Runs of 4 cards
             scoreSets(_setsOfFour, allValuesIncrementByOne, result.AddRun, result);
+            //Runs of 3 cards
             scoreSets(_setsOfThree, allValuesIncrementByOne, result.AddRun, result);
-            scoreSets(new[] { Cards }, allSuitsEqual, result.AddFlush, result);
+            //Flush of 5 cards
+            scoreSets(_allFive, allSuitsEqual, result.AddFlush, result);
+            //Flush of 4 cards
             scoreSets(_setsOfFour, allSuitsEqual, result.AddFlush, result);
+            //Fifteen of 5 cards
+            scoreSets(_allFive, allValuesEqualFifteen, result.AddFifteen, result);
+            //Fifteen of 4 cards
+            scoreSets(_setsOfFour, allValuesEqualFifteen, result.AddFifteen, result);
+            //Fifteen of 3 cards
+            scoreSets(_setsOfThree, allValuesEqualFifteen, result.AddFifteen, result);
+            //Fifteen of 2 cards
+            scoreSets(_setsOfTwo, allValuesEqualFifteen, result.AddFifteen, result);
             return result;
         }
 
@@ -64,6 +81,10 @@ namespace CribbageCounter {
         private static bool allSuitsEqual(IEnumerable<Card> cards) {
             var f = cards.First();
             return cards.All(c => c.Suit == f.Suit);
+        }
+
+        private static bool allValuesEqualFifteen(IEnumerable<Card> cards) {
+            return cards.Sum(c => c.Points) == 15;
         }
 
         private static IEnumerable<Card> sortCards(IEnumerable<Card> cards) {

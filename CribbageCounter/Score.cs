@@ -4,49 +4,17 @@ using System.Linq;
 namespace CribbageCounter {
     public class Score {
 
-        public List<ScoreDetail> Details { get; }
-
-        public int Points {
-            get {
-                return Details.Sum(d => d.Points);
-            }
-        }
-        public Score() {
-            Details = new List<ScoreDetail>();
-        }
-
-        public ScoreDetail FourOfAKind {
-            get {
-                return Details.SingleOrDefault(d => d.ScoreDetailType == ScoreDetailType.FourOfAKind);
-            }
-        }
-
-        public ScoreDetail ThreeOfAKind {
-            get {
-                return Details.SingleOrDefault(d => d.ScoreDetailType == ScoreDetailType.ThreeOfAKind);
-            }
-        }
-
-        public List<ScoreDetail> Pairs {
-            get {
-                return Details.Where(d => d.ScoreDetailType == ScoreDetailType.Pair).ToList();
-            }
-        }
-
-        public List<ScoreDetail> Runs {
-            get {
-                return Details.Where(d => d.ScoreDetailType == ScoreDetailType.Run).ToList();
-            }
-        }
-
-        public ScoreDetail Flush {
-            get {
-                return Details.SingleOrDefault(d => d.ScoreDetailType == ScoreDetailType.Flush);
-            }
-        }
+        public List<ScoreDetail> Details { get; } = new List<ScoreDetail>();
+        public int TotalPoints => Details.Sum(d => d.Points);
+        public ScoreDetail FourOfAKind => oneOf(ScoreDetailType.FourOfAKind);
+        public ScoreDetail ThreeOfAKind => oneOf(ScoreDetailType.ThreeOfAKind);
+        public List<ScoreDetail> Pairs => allOf(ScoreDetailType.Pair);
+        public List<ScoreDetail> Runs => allOf(ScoreDetailType.Run);
+        public ScoreDetail Flush => oneOf(ScoreDetailType.Flush);
+        public List<ScoreDetail> Fifteens => allOf(ScoreDetailType.Fifteen);
 
         public void AddFourOfAKind(IEnumerable<Card> cards) {
-            Details.Add(ScoreDetail.FourOfAKind(cards));
+            Details.Add(ScoreDetail.CreateFourOfAKind(cards));
         }
 
         public void AddThreeOfAKind(IEnumerable<Card> cards) {
@@ -55,7 +23,7 @@ namespace CribbageCounter {
                 return;
             }
 
-            Details.Add(ScoreDetail.ThreeOfAKind(cards));
+            Details.Add(ScoreDetail.CreateThreeOfAKind(cards));
         }
 
         public void AddPair(IEnumerable<Card> cards) {
@@ -68,7 +36,7 @@ namespace CribbageCounter {
                 return;
             }
 
-            Details.Add(ScoreDetail.Pair(cards));
+            Details.Add(ScoreDetail.CreatePair(cards));
         }
 
         public void AddRun(IEnumerable<Card> cards) {
@@ -82,7 +50,7 @@ namespace CribbageCounter {
             });
 
             if (!allCardsInAnotherRun) {
-                Details.Add(ScoreDetail.Run(cards));
+                Details.Add(ScoreDetail.CreateRun(cards));
             }
         }
 
@@ -92,7 +60,19 @@ namespace CribbageCounter {
                 return;
             }
 
-            Details.Add(ScoreDetail.Flush(cards));
+            Details.Add(ScoreDetail.CreateFlush(cards));
+        }
+
+        public void AddFifteen(IEnumerable<Card> cards) {
+            Details.Add(ScoreDetail.CreateFifteen(cards));
+        }
+
+        private ScoreDetail oneOf(ScoreDetailType scoreDetailType) {
+            return Details.SingleOrDefault(d => d.ScoreDetailType == scoreDetailType);
+        }
+
+        private List<ScoreDetail> allOf(ScoreDetailType scoreDetailType) {
+            return Details.Where(d => d.ScoreDetailType == scoreDetailType).ToList();
         }
 
     }
