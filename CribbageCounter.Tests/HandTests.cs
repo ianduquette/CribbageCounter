@@ -194,24 +194,29 @@ namespace CribbageCounter.Tests {
             assertScoreDetailOrdered(score.ThreeOfAKind, 6, "Three of a Kind", expectedThreeOfAKind);
         }
 
-        [TestCase("KC", "QC", "AC", "10C", "7C", new[] { "AC", "7C", "10C", "QC", "KC" }, Description = "Flush of five. Cards in position 0, 1, 2, 3, 4. No fifteens.")]
-        [TestCase("2D", "JD", "8D", "4D", "10S", new[] { "2D", "4D", "8D", "JD" }, Description = "Flush of four. Cards in position 0, 1, 2, 3. No fifteens.")]
-        [TestCase("KS", "AS", "6C", "10S", "2S", new[] { "AS", "2S", "10S", "KS" }, Description = "Flush of four. Cards in position 0, 1, 2, 4. No fifteens.")]
-        [TestCase("4C", "6C", "10D", "8C", "2C", new[] { "2C", "4C", "6C", "8C" }, Description = "Flush of four. Cards in position 0, 1, 3, 4. No fifteens.")]
-        [TestCase("JH", "8C", "6H", "KH", "10H", new[] { "6H", "10H", "JH", "KH" }, Description = "Flush of four. Cards in position 0, 2, 3, 4. No fifteens.")]
-        [TestCase("7D", "QH", "10H", "4H", "2H", new[] { "2H", "4H", "10H", "QH" }, Description = "Flush of four. Cards in position 1, 2, 3, 4. No fifteens.")]
-        //TODO: Flush of 4 CANNOT include the top card so only test needed is 0 1 2 3
-        //Make sure that ANY hand that has a turned up card as the flush does NOT match
-        public void CountScore_Flush(string c1, string c2, string c3, string c4, string c5, string[] expectedCardsInScore) {
+        [TestCase("KC", "QC", "AC", "10C", "7C", false, new[] { "AC", "7C", "10C", "QC", "KC" }, Description = "Flush of five. Cards in position 0, 1, 2, 3, 4. No fifteens.")]
+        [TestCase("2D", "JD", "8D", "4D", "10S", false, new[] { "2D", "4D", "8D", "JD" }, Description = "Flush of four. Cards in position 0, 1, 2, 3. No fifteens.")]
+        [TestCase("4C", "JC", "KC", "8C", "2H", true, new string [] { }, Description = "Flush of four. Cards in position 0, 1, 2, 3. No score possible, it's a crib.")]
+        [TestCase("KS", "AS", "6C", "10S", "2S", false, new string[] { }, Description = "Flush of four. Cards in position 0, 1, 2, 4. No score possible.")]
+        [TestCase("4C", "6C", "10D", "8C", "2C", false, new string[] { }, Description = "Flush of four. Cards in position 0, 1, 3, 4. No score possible.")]
+        [TestCase("JH", "8C", "6H", "KH", "10H", false, new string[] { }, Description = "Flush of four. Cards in position 0, 2, 3, 4. No score possible.")]
+        [TestCase("7D", "QH", "10H", "4H", "2H", false, new string[] { }, Description = "Flush of four. Cards in position 1, 2, 3, 4. No score possible.")]
+        public void CountScore_Flush(string c1, string c2, string c3, string c4, string c5, bool isCrib, string[] expectedCardsInScore) {
             //Arrange
-            var hand = Hand.Create(c1, c2, c3, c4, c5);
+            var hand = isCrib ? Hand.CreateCrib(c1, c2, c3, c4, c5) : Hand.Create(c1, c2, c3, c4, c5);
 
             //Act
             var score = hand.CountScore();
 
             //Assert
-            assertScoreDetail(score, expectedCardsInScore.Length, expectedCardsInScore, "Flush", s => s.Flush);
-            Assert.AreEqual(expectedCardsInScore.Count(), score.TotalPoints);
+            if (!expectedCardsInScore.Any()) {
+                Assert.AreEqual(0, score.TotalPoints, "Total points.");
+                Assert.AreEqual(0, score.Details.Count);
+            }
+            else {
+                assertScoreDetail(score, expectedCardsInScore.Length, expectedCardsInScore, "Flush", s => s.Flush);
+                Assert.AreEqual(expectedCardsInScore.Count(), score.TotalPoints);
+            }
         }
 
         [Test]
