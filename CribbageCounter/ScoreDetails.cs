@@ -39,5 +39,9 @@ namespace CribbageCounter {
             return new ScoreDetail(ScoreDetailType.Fifteen, 2, "Fifteen", cards);
         }
 
+        public static ScoreDetail CreateNibs(Card card) {
+            return new ScoreDetail(ScoreDetailType.Nibs, 1, "His Nibs", new[] { card });
+        }
+
     }
 }

@@ -40,7 +40,7 @@ namespace CribbageCounter.Tests {
         [TestCase("7D", "2D", "7S", "7H", "4C", new[] { "7S", "7H", "7D" }, Description = "Three of a kind. Cards in position 0, 2, 3. No fifteens.")]
         [TestCase("8S", "AD", "8C", "8H", "2D", new[] { "8S", "8H", "8C" }, Description = "Three of a kind. Cards in position 0, 2, 4. No fifteens.")]
         [TestCase("9H", "2C", "3H", "9C", "9S", new[] { "9S", "9H", "9C" }, Description = "Three of a kind. Cards in position 0, 3, 4. No fifteens.")]
-        [TestCase("4H", "JH", "JS", "JD", "KD", new[] { "JS", "JH", "JD" }, Description = "Three of a kind. Cards in position 1, 2, 3. No fifteens.")]
+        [TestCase("4H", "JH", "JS", "JD", "KC", new[] { "JS", "JH", "JD" }, Description = "Three of a kind. Cards in position 1, 2, 3. No fifteens.")]
         [TestCase("3S", "QD", "QS", "6C", "QH", new[] { "QS", "QH", "QD" }, Description = "Three of a kind. Cards in position 1, 2, 4. No fifteens.")]
         [TestCase("7C", "KC", "JH", "KD", "KS", new[] { "KS", "KC", "KD" }, Description = "Three of a kind. Cards in position 1, 3, 4. No fifteens.")]
         [TestCase("3C", "JS", "10S", "10H", "10C", new[] { "10S", "10H", "10C" }, Description = "Three of a kind. Cards in position 2, 3, 4. No fifteens.")]
@@ -196,10 +196,10 @@ namespace CribbageCounter.Tests {
 
         [TestCase("KC", "QC", "AC", "10C", "7C", false, new[] { "AC", "7C", "10C", "QC", "KC" }, Description = "Flush of five. Cards in position 0, 1, 2, 3, 4. No fifteens.")]
         [TestCase("2D", "JD", "8D", "4D", "10S", false, new[] { "2D", "4D", "8D", "JD" }, Description = "Flush of four. Cards in position 0, 1, 2, 3. No fifteens.")]
-        [TestCase("4C", "JC", "KC", "8C", "2H", true, new string [] { }, Description = "Flush of four. Cards in position 0, 1, 2, 3. No score possible, it's a crib.")]
+        [TestCase("4C", "JC", "KC", "8C", "2H", true, new string[] { }, Description = "Flush of four. Cards in position 0, 1, 2, 3. No score possible, it's a crib.")]
         [TestCase("KS", "AS", "6C", "10S", "2S", false, new string[] { }, Description = "Flush of four. Cards in position 0, 1, 2, 4. No score possible.")]
         [TestCase("4C", "6C", "10D", "8C", "2C", false, new string[] { }, Description = "Flush of four. Cards in position 0, 1, 3, 4. No score possible.")]
-        [TestCase("JH", "8C", "6H", "KH", "10H", false, new string[] { }, Description = "Flush of four. Cards in position 0, 2, 3, 4. No score possible.")]
+        [TestCase("QH", "8C", "6H", "KH", "10H", false, new string[] { }, Description = "Flush of four. Cards in position 0, 2, 3, 4. No score possible.")]
         [TestCase("7D", "QH", "10H", "4H", "2H", false, new string[] { }, Description = "Flush of four. Cards in position 1, 2, 3, 4. No score possible.")]
         public void CountScore_Flush(string c1, string c2, string c3, string c4, string c5, bool isCrib, string[] expectedCardsInScore) {
             //Arrange
@@ -302,6 +302,23 @@ namespace CribbageCounter.Tests {
                 Assert.NotNull(actual, $"Cards {String.Join(",", expected.Select(e => e.ToString()))} not found in score!");
                 assertAllCardsInScore(expected, actual);
             });
+        }
+
+        [TestCase("JD", "4D", "8C", "2S", "10D", false, "JD", Description = "Nibs.  Position 0")]
+        [TestCase("JD", "6D", "2C", "10S", "KD", true, "JD", Description = "Nibs.  Position 0")]
+        [TestCase("2H", "JH", "10H", "7D", "4H", false, "JH", Description = "Nibs.  Position 1")]
+        [TestCase("KS", "2S", "JS", "9H", "8S", false, "JS", Description = "Nibs.  Position 2")]
+        [TestCase("QS", "2D", "4S", "JC", "6C", false, "JC", Description = "Nibs.  Position 3")]
+        public void CountScore_NibsForJack(string c1, string c2, string c3, string c4, string c5, bool isCrib, string expectedCardInScore) {
+            //Arrange
+            var hand = isCrib ? Hand.CreateCrib(c1, c2, c3, c4, c5) : Hand.Create(c1, c2, c3, c4, c5);
+
+            //Act
+            var score = hand.CountScore();
+
+            //Assert
+            Assert.AreEqual(1, score.TotalPoints, "Total Points");
+            assertScoreDetail(score, 1, new[] { expectedCardInScore }, "His Nibs", s => s.Nibs);
         }
 
         private static void assertScoreDetail(Score actualScore, int expectedPoints, string[] expectedCardsInScore, string expectedDescription, Func<Score, ScoreDetail> getDetail) {

@@ -11,6 +11,7 @@ namespace CribbageCounter {
         public Suit Suit { get; }
         public int Rank => getRank();
         public int Points => getPoints();
+        public bool IsJack => this.Value == Jack;
 
         public Card(string input) {
             validateInput(input);

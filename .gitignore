@@ -3,6 +3,7 @@
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+!.vscode/standard-snippets.code-snippets
 *.code-workspace
 bin
 obj

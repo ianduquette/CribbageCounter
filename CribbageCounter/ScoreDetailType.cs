@@ -5,6 +5,7 @@ namespace CribbageCounter {
         Pair,
         Run,
         Flush,
-        Fifteen
+        Fifteen,
+        Nibs
     }
 }

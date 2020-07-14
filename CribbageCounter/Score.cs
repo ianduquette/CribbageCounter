@@ -7,10 +7,10 @@ namespace CribbageCounter {
 
         private Card[] _cards;
         private Card[][] _allFive => new[] { _cards };
-        private Card[][] _justTheHand => new[] {new [] {_cards[0], _cards[1], _cards[2], _cards[3]}};
         private Card[][] _setsOfFour;
         private Card[][] _setsOfThree;
         private Card[][] _setsOfTwo;
+        private IEnumerable<Card> _justTheHand => _cards.Take(4);
 
         public List<ScoreDetail> Details { get; } = new List<ScoreDetail>();
         public int TotalPoints => Details.Sum(d => d.Points);
@@ -20,6 +20,7 @@ namespace CribbageCounter {
         public List<ScoreDetail> Runs => allOf(ScoreDetailType.Run);
         public ScoreDetail Flush => oneOf(ScoreDetailType.Flush);
         public List<ScoreDetail> Fifteens => allOf(ScoreDetailType.Fifteen);
+        public ScoreDetail Nibs => oneOf(ScoreDetailType.Nibs);
 
         private Score(Card[] cards) {
             _cards = cards;
@@ -88,7 +89,7 @@ namespace CribbageCounter {
             scoreSets(_allFive, allSuitsEqual, addFlush);
             //Flush of 4 cards
             if (!isCrib) {
-                scoreSets(_justTheHand, allSuitsEqual, addFlush);
+                scoreSets(new[] { _justTheHand }, allSuitsEqual, addFlush);
             }
             //Fifteen of 5 cards
             scoreSets(_allFive, allValuesEqualFifteen, addFifteen);
@@ -98,6 +99,8 @@ namespace CribbageCounter {
             scoreSets(_setsOfThree, allValuesEqualFifteen, addFifteen);
             //Fifteen of 2 cards
             scoreSets(_setsOfTwo, allValuesEqualFifteen, addFifteen);
+            //Count Nibs
+            scoreNibs();
         }
 
         private static void scoreSets(IEnumerable<IEnumerable<Card>> setsOfCards, Predicate<IEnumerable<Card>> condition, Action<IEnumerable<Card>> addToScore) {
@@ -106,6 +109,14 @@ namespace CribbageCounter {
                     addToScore(sortCards(s));
                 }
             });
+        }
+
+        private void scoreNibs() {
+            foreach (var card in _justTheHand) {
+                if (card.IsJack && card.Suit == _cards[4].Suit) {
+                    Details.Add(ScoreDetail.CreateNibs(card));
+                }
+            }
         }
 
         private void addFourOfAKind(IEnumerable<Card> cards) {
